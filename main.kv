@@ -1,0 +1,194 @@
+<MainWindow>:
+	id: sm
+	punch_popup: punch_popup.__self__
+	
+	#---------- Main Screen -------------
+	MDScreen:
+		name: 'home screen'
+		MDBoxLayout:
+			id: main
+			orientation: 'vertical'
+			
+			ModalView:
+				id: punch_popup
+				size_hint: .75, .5
+				auto_dismiss: False
+				on_parent: if self.parent == main: main.remove_widget(self)
+				MDBoxLayout:
+					orientation: 'vertical'
+					padding: self.height/8
+					MDFloatingActionButton:
+						icon: 'plus'
+						type: 'large'
+						pos_hint: {'center_x': .5}
+						on_release: root.punch()
+						
+					MDLabel:
+						
+					MDRaisedButton:
+						text: 'Cancel'
+						bold: True
+						md_bg_color: 'red'
+						size_hint_x: .75
+						pos_hint: {'center_x': .5}
+						on_release: punch_popup.dismiss()
+							
+						
+			MDTopAppBar:
+				id: appbar
+				title: 'Punch'
+				theme_icon: 'moon-waxing-crescent' if app.theme_cls.theme_style == 'Light' else "white-balance-sunny"
+				right_action_items:
+					[['cog', lambda x: root.switch_screen('setting screen')]]
+					
+				
+			MDBoxLayout:
+				orientation: 'vertical'
+				MDGridLayout:
+					cols: 3
+					adaptive_height: True
+					padding: ['16dp', 0, '16dp', 0]
+					md_bg_color: app.theme_cls.primary_light
+	
+					
+					MDLabel:
+						text: 'Date'
+						
+					MDLabel:
+						text: 'In Time'
+						halign: 'center'
+					MDLabel:
+						text: 'Out Time'
+						halign: 'right'
+						
+				MDAnchorLayout:
+					anchor_y: 'top'
+					ScrollView:
+						MDList:
+							id: punch_data_container
+								
+			
+			MDFloatLayout:
+				size_hint_y: None
+				height: '20dp'
+				md_bg_color: appbar.md_bg_color
+				
+				#---- Button in right-bottom side for opening punch popup	
+				MDFloatingActionButton:
+					icon: 'plus'
+					pos_hint: {'x': .8}
+					y: self.height*1.5
+					on_release: punch_popup.open()
+					
+				MDBoxLayout:
+					size_hint: None, None
+					pos: self.parent.pos
+					size: self.parent.size
+					MDLabel:
+						text: 'v0.1'
+					MDLabel:
+						text: 'Made by(pyLover2050)'
+						halign: 'right'
+						
+						
+	#---------------Setting Screen--------------					
+	
+	MDScreen:
+		name: 'setting screen'
+		MDBoxLayout:
+			orientation: 'vertical'
+			OneLineAvatarIconListItem:
+				padding: []
+				IconLeftWidget:
+					icon: 'arrow-left'
+					on_release:
+						sm.current = 'home screen'
+						
+				WeeklyOffListRightBody:
+						text: 'Punch'
+						halign: 'right'
+			
+			
+			MDBoxLayout:
+				orientation: 'vertical'
+				OneLineAvatarIconListItem:
+					on_parent:
+						self.ids._left_container.size_hint_x = .5
+						
+						
+					WeeklyOffListLeftBody:
+						text: 'Dark Theme'
+					ThemeSwitch:
+						id: theme_switch
+						on_active: app.sactive(*args)
+						size_hint_x: None
+						disabled: True
+						
+				OneLineAvatarIconListItem:
+					on_release: root.open_weekly_off_popup()
+					on_parent:
+						self.ids._left_container.size_hint_x = .5
+						self.ids._right_container.size_hint_x = .5
+						self.remove_widget(self.ids._text_container)
+						
+					WeeklyOffListLeftBody:
+						text: 'Weekly Offs'
+						
+					WeeklyOffListRightBody:
+						id: weekly_offs_label
+						text: root.weekly_offs if root.weekly_offs else 'Not set'
+						halign: 'right'
+						
+				OneLineAvatarIconListItem:
+					on_release: root.export_data()
+					on_parent:
+						self.ids._left_container.size_hint_x = .5
+					
+					WeeklyOffListLeftBody:
+						text: 'Export'
+						
+					IconRightWidget:
+						icon: 'file-export-outline'
+						on_release: root.export_data()
+						
+				OneLineAvatarIconListItem:
+					on_release: root.open_file_manager()
+					on_parent:
+						
+						self.ids._left_container.size_hint_x = .5
+					
+					WeeklyOffListLeftBody:
+						text: 'Import'
+						
+					IconRightWidget:
+						icon: 'file-import-outline'
+						on_release: root.open_file_manager()
+						
+			
+			MDBoxLayout:
+				orientation: 'vertical'
+				MDLabel:
+					text: '[b]Punch[sub]v0.1[/sub][/b]'
+					disabled: True
+					adaptive_height: True
+					markup: True
+					font_style: 'H4'
+					
+				MDLabel:
+					adaptive_height: True
+					text: 'Devloped by [ref=pyLover2050][color=#0000ff]pyLover2050[/color][/ref](Md. Safeek)'
+					markup: True
+					on_ref_press: root.open_url('https://github.com/pyLover2050')
+					
+					
+			
+					
+<ListMainBody>:
+	on_parent:
+		self.ids._left_container.size_hint_x = .5
+		self.ids._right_container.size_hint_x = .5
+		self.remove_widget(self.ids._text_container)
+
+
+<WeeklyOffListLeftBody@ILeftBody+MDLabel>:
+<WeeklyOffListRightBody@IRightBody+MDLabel>:
