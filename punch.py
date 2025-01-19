@@ -146,12 +146,12 @@ class PunchManager:
 			
 			if day_name in weekly_offs:
 				return True
-			return False	
+			return False
+			
 		except KeyError:
 			return False
-		
 		except:
-			raise
+			return False
 		
 		
 	def export(self, dir: str = ''):

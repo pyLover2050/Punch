@@ -256,7 +256,6 @@ class MainApp(MDApp):
 			# for dismiss the popup
 			ins.dismiss()
 			self.root.import_data(file)
-			#self.config.update("Genral", 'need-to-import-data', str(False))
 			if punch_mn.need_to_punch:
 				self.root.open_punch_popup()
 			
@@ -276,7 +275,9 @@ class MainApp(MDApp):
 				pass
 				
 		def need_to_import_data():
-			ask_permission()
+			if not has_permission():
+				ask_permission()
+				return
 			external_dir = storagepath.get_external_storage_dir()
 			file = os.path.join(
 			external_dir, 'punch', punch_mn.BACKUP_FILE
@@ -293,10 +294,11 @@ class MainApp(MDApp):
 		self.config = Configure()
 		punch_mn = PunchManager()
 		
-		new_device = self.config.get_boolean('Genral', 'new-device')
+		new_device = self.config.get('Genral', 'new-device')
 		if new_device:
 			ask_permission()
 			need_to_import_data()
+			self.config.update('Genral', 'new-device', False)
 		else:
 			if punch_mn.need_to_punch:
 				self.root.open_punch_popup()
@@ -312,13 +314,13 @@ class MainApp(MDApp):
 		
 		try:
 			weekly_offs = self.config.get('User', 'weekly off')
+			print(self.config.get('Genral', 'theme'))
 			self.root.weekly_offs = weekly_offs
 		except KeyError:
 			pass
 		
 		self.config.update('User', 'recent-login', str(datetime.now()))
 		self.root.reload()
-		self.config.update('Genral', 'new-device', str(False))
 		
 		
 					

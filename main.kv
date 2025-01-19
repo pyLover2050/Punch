@@ -97,23 +97,37 @@
 		name: 'setting screen'
 		MDBoxLayout:
 			orientation: 'vertical'
-			OneLineAvatarIconListItem:
-				padding: []
-				IconLeftWidget:
-					icon: 'arrow-left'
-					on_release:
-						sm.current = 'home screen'
-						
-				WeeklyOffListRightBody:
-						text: 'Punch'
-						halign: 'right'
+			
+			MDTopAppBar:
+				id: appbar
+				title: 'Settings'
+				left_action_items:
+					[['arrow-left', lambda x: root.switch_screen('home screen')]]
+				
 			
 			
 			MDBoxLayout:
 				orientation: 'vertical'
+				spacing: dp(10)
+				MDLabel:
+					text: 'Settings'
+					adaptive_height: True
+					disabled: True
+					font_style: 'H6'
+					text_color: '#BBBBBB'
+					bold: True
+						
+				MDLabel:
+					# divider
+					size_hint_y: None
+					height: dp(1)
+					md_bg_color: '#CCCCCC'
+					
 				OneLineAvatarIconListItem:
 					on_parent:
 						self.ids._left_container.size_hint_x = .5
+						
+					
 						
 						
 					WeeklyOffListLeftBody:
@@ -139,18 +153,18 @@
 						text: root.weekly_offs if root.weekly_offs else 'Not set'
 						halign: 'right'
 						
-				OneLineAvatarIconListItem:
-					on_release: root.export_data()
-					on_parent:
-						self.ids._left_container.size_hint_x = .5
+				MDLabel:
+					text: 'Manage Data'
+					adaptive_height: True
+					disabled: True
+					font_style: 'H6'
+						
+				MDLabel:
+					# divider
+					size_hint_y: None
+					height: dp(1)
+					md_bg_color: '#CCCCCC'
 					
-					WeeklyOffListLeftBody:
-						text: 'Export'
-						
-					IconRightWidget:
-						icon: 'file-export-outline'
-						on_release: root.export_data()
-						
 				OneLineAvatarIconListItem:
 					on_release: root.open_file_manager()
 					on_parent:
@@ -164,9 +178,38 @@
 						icon: 'file-import-outline'
 						on_release: root.open_file_manager()
 						
+				OneLineAvatarIconListItem:
+					on_release: root.export_data()
+					on_parent:
+						self.ids._left_container.size_hint_x = .5
+					
+					WeeklyOffListLeftBody:
+						text: 'Export'
+						
+					IconRightWidget:
+						icon: 'file-export-outline'
+						on_release: root.export_data()
+				
+						
 			
 			MDBoxLayout:
+				id: about_section
 				orientation: 'vertical'
+				padding: dp(5)
+				spacing: dp(2.5)
+				MDLabel:
+					text: 'About'
+					font_style: 'H6'
+					adaptive_height: True
+					disabled: True
+					md_bg_color: '#BBBBBB'
+					
+				MDLabel:
+					# divider
+					size_hint_y: None
+					height: dp(1)
+					md_bg_color: '#CCCCCC'
+					
 				MDLabel:
 					text: '[b]Punch[sub]v0.1[/sub][/b]'
 					disabled: True
@@ -176,9 +219,21 @@
 					
 				MDLabel:
 					adaptive_height: True
-					text: 'Devloped by [ref=pyLover2050][color=#0000ff]pyLover2050[/color][/ref](Md. Safeek)'
+					text: '[b]Devloped[/b] by [ref=pyLover2050][color=#0000ff]pyLover2050[/color][/ref](Md. Safeek)'
 					markup: True
 					on_ref_press: root.open_url('https://github.com/pyLover2050')
+					
+				MDLabel:
+					text: 'App Icon [b]Created[/b] by [ref=Cuputo][color=#0000ff]Cuputo[/color][/ref]'
+					markup: True
+					adaptive_height: True
+					on_ref_press: root.open_url('https://www.flaticon.com/free-icons/fist')
+					
+				MDLabel:
+					text: "[b]Disclaimer[/b]: The data recorded by this app does not reflect official company records. It is provided for informational purposes only and should not be considered official or used for legal or official purposes. The accuracy of this data cannot be guaranteed."
+					markup: True
+					disabled: True
+					adaptive_height: True
 					
 					
 			
