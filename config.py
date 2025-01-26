@@ -1,16 +1,13 @@
+import configparser
 from datetime import datetime
 import os
 import sys
-import json
-from kivy.logger import Logger
 
 class Configure:
-	FILE_NAME = 'app_config.json'
-	__data = dict()
-	new_device = False
+	FILE_NAME = 'app_config.ini'
+	__data = None
 	def __init__(self):
 		if not os.path.exists(self.FILE_NAME):
-			self.new_device = True
 			self._initialize()
 			
 	def __new__(cls):
@@ -19,46 +16,46 @@ class Configure:
 		return cls.instance
 			
 	def _initialize(self):
-		self.__data['Genral'] = {
+		config = configparser.ConfigParser()
+		config['Genral'] = {
 		'theme': 'Light',
-		'new-device': True,
+		'new-device': str(True),
 		}
 		
-		self.__data['User'] = {
+		config['User'] = {
 		'login-on': str(datetime.now()),
 		'recent-login': str(datetime.now()),
 		}
 		try:
-			with open(self.FILE_NAME, 'w') as f:
-				f.write(json.dumps(self.__data))
-			Logger.info('Punch Config: initialize successfully.')
+			with open('app_config.ini', 'w') as f:
+				config.write(f)
+			
 		except Exception as e:
 			err_type, error, tab = sys.exc_info()
 			del tab
-			Logger.exception('Config: {0}{1}'.format(err_type, err))
 		
 	def get(self, section, key=None):
-		print(self.__data)
 		if not self.__data:
-			if os.path.exists(self.FILE_NAME):
-				file = open(self.FILE_NAME)
-				self.__data = json.load(file)
-			else:
-				return 
+			self.__data = configparser.ConfigParser()
+			self.__data.read('app_config.ini')
 			
 		if key:
 			return self.__data[section][key]
 			
 		return self.__data[section]
 		
+	def get_boolean(self, section, key):
+		if not self.__data:
+			self.__data = configparser.ConfigParser()
+			self.__data.read('app_config.ini')
+			
+		return self.__data[section].getboolean(key)
+		
 	def update(self, section, key, value):
 		if not self.__data:
-			if os.path.exists(self.FILE_NAME):
-				file = open(self.FILE_NAME)
-				self.__data = json.load(file)
-			else:
-				return 
+			self.__data = configparser.ConfigParser()
+			self.__data.read('app_config.ini')
 			
 		self.__data[section][key] = value
-		with open(self.FILE_NAME, 'w') as f:
-			f.write(json.dumps(self.__data))
+		with open('app_config.ini', 'w') as f:
+			self.__data.write(f)

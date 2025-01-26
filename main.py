@@ -1,28 +1,30 @@
 import os
+import sys
 from datetime import datetime
-
+	
 from kivy.utils import platform
 from kivy.lang import Builder
+from kivy.logger import Logger
 from kivy.clock import Clock
 from kivy.properties import StringProperty
-
-from kivy.logger import Logger
+	
 from kivymd.app import MDApp
 from kivymd.toast import toast
 from kivymd.uix.screenmanager import MDScreenManager
 from kivymd.uix.list import (ILeftBody, IRightBody,
-OneLineAvatarIconListItem)
+	OneLineAvatarIconListItem)
 from kivymd.uix.label import MDLabel
 from kivymd.uix.selectioncontrol.selectioncontrol import MDSwitch
 from kivymd.uix.boxlayout import MDBoxLayout
 from kivymd.uix.filemanager import MDFileManager
-
-from uix.popup import WeeklyOffPopup, InfoPopup
-
+	
 from plyer import storagepath 
 
 from config import Configure
 from punch import PunchManager
+from uix.popup import WeeklyOffPopup, InfoPopup	
+	
+
 
 android = False
 if platform == 'android':
@@ -177,6 +179,7 @@ class MainWindow(MDScreenManager):
 				confirm()
 				return
 			return
+			
 		if has_permission():
 			confirm()
 		else:
@@ -187,17 +190,27 @@ class MainWindow(MDScreenManager):
 		
 	def import_data(self, file):
 		def start_import():
-			toast('Start importing')
-			p = PunchManager()
-			p.import_data(file)
-			toast('Import complete.')
-			self.reload()
+			try:
+				toast('Start importing')
+				p = PunchManager()
+				p.import_data(file)
+				toast('Import complete.')
+				self.reload()
+			except:
+				err_type, err, tb = sys.exc_info()
+				error_text = str(err_type)+" "+str(err)
+				popup = InfoPopup()
+				popup.title = 'Error1'
+				popup.text = error_text
+				popup.open()
+			
 		
 		def permission_callback(permission, granted):
 			if all(granted):
 				start_import()
 				return
 			return
+			
 		if has_permission():
 			start_import()
 		else:
@@ -234,6 +247,7 @@ class MainWindow(MDScreenManager):
 		mn = MDFileManager(
 		exit_manager = exit_manager,
 		select_path = select_path,
+		selector = 'file',
 		)
 		if has_permission():
 			open_manager()
@@ -242,6 +256,8 @@ class MainWindow(MDScreenManager):
 				Permission.READ_EXTERNAL_STORAGE,
 				Permission.WRITE_EXTERNAL_STORAGE
 			], callback= permission_callback)
+			
+			
 		
 	
 class MainApp(MDApp):
@@ -249,7 +265,8 @@ class MainApp(MDApp):
 		self.theme_cls.theme_style_switch_animation = True
 		self.theme_cls.material_style = 'M2'
 		return MainWindow()
-		
+	
+	
 	def on_start(self):
 		def on_import_popup_ok(ins, file):
 			# param: < ins > an instance of InfoPopup
@@ -269,15 +286,13 @@ class MainApp(MDApp):
 				Permission.READ_EXTERNAL_STORAGE,
 				Permission.WRITE_EXTERNAL_STORAGE
 				]
-				request_permission(
+				request_permissions(
 				pr, callback = permission_callback)
 			except:
 				pass
 				
 		def need_to_import_data():
-			if not has_permission():
-				ask_permission()
-				return
+			ask_permission()
 			external_dir = storagepath.get_external_storage_dir()
 			file = os.path.join(
 			external_dir, 'punch', punch_mn.BACKUP_FILE
@@ -289,54 +304,88 @@ class MainApp(MDApp):
 				popup.on_ok = lambda: on_import_popup_ok(popup, file)
 				popup.open()
 			
+		try:	
+			super().on_start()
+			self.punch_app_config = Configure()
+			punch_mn = PunchManager()
 			
-		super().on_start()
-		self.config = Configure()
-		punch_mn = PunchManager()
-		
-		new_device = self.config.get('Genral', 'new-device')
-		if new_device:
-			ask_permission()
-			need_to_import_data()
-			self.config.update('Genral', 'new-device', False)
-		else:
-			if punch_mn.need_to_punch:
-				self.root.open_punch_popup()
+			new_device = self.punch_app_config.get_boolean('Genral', 'new-device')
+			if new_device:
+				ask_permission()
+				need_to_import_data()
+			else:
+				if punch_mn.need_to_punch:
+					self.root.open_punch_popup()
+					
+			if os.path.exists('lb.txt'):
+				lf = open('lb.txt')
+				text = lf.read()
+				popup = InfoPopup()
+				popup.title = 'Error'
+				popup.text = text
+				popup.open()
+					
 				
+			theme = self.punch_app_config.get('Genral', 'theme')
+			self.change_theme_style(theme)
+		except KeyError:
+			self.theme = 'Light'
 			
-		theme = self.config.get('Genral', 'theme')
-		self.change_theme_style(theme)
-		
-		if theme == 'Dark':
-			self.root.ids.theme_switch.active = True
-		else:
-			self.root.ids.theme_switch.active = False
+		except Exception as e:
+			err_type, err, tb = sys.exc_info()
+			error_text = str(err_type)+" "+str(err)
+			popup = InfoPopup()
+			popup.title = 'Error1'
+			popup.text = error_text
+			popup.open()
+			
 		
 		try:
-			weekly_offs = self.config.get('User', 'weekly off')
-			print(self.config.get('Genral', 'theme'))
+			if theme == 'Dark':
+				self.root.ids.theme_switch.active = True
+			else:
+				self.root.ids.theme_switch.active = False
+		
+			weekly_offs = self.punch_app_config.get('User', 'weekly off')
 			self.root.weekly_offs = weekly_offs
 		except KeyError:
 			pass
+		except Exception as e:
+			err_type, err, tb = sys.exc_info()
+			error_text = str(err_type)+" "+str(err)
+			popup = InfoPopup()
+			popup.title = 'Error'
+			popup.text = error_text
+			popup.open()
+			
+		try:
 		
-		self.config.update('User', 'recent-login', str(datetime.now()))
-		self.root.reload()
+			self.punch_app_config.update('User', 'recent-login', str(datetime.now()))
+			self.root.reload()
+			self.punch_app_config.update('Genral', 'new-device', str(False))
+		except Exception as e:
+			err_type, err, tb = sys.exc_info()
+			error_text = str(err_type)+" "+str(err)
+			popup = InfoPopup()
+			popup.title = 'Error'
+			popup.text = error_text
+			popup.open()
 		
 		
 					
-				
+			
 		
 	def change_theme_style(self, theme=None):
 		if theme:
 			if theme == 'Dark':
 				self.theme_cls.theme_style = 'Dark'
 				self.theme_cls.primary_palette = 'BlueGray'
-				self.config.update("Genral", 'theme', 'Dark')
+				self.punch_app_config.update("Genral", 'theme', 'Dark')
 				
 			else:
 				self.theme_cls.theme_style = 'Light'
 				self.theme_cls.primary_palette = 'Blue'
-				self.config.update("Genral", 'theme', 'Light')
+				self.punch_app_config.update("Genral", 'theme', 'Light')
 				
 			super().on_start()
 			return 
@@ -344,12 +393,12 @@ class MainApp(MDApp):
 		if self.theme_cls.theme_style == 'Dark':
 			self.theme_cls.theme_style = 'Light'
 			self.theme_cls.primary_palette = 'Blue'
-			self.config.update("Genral", 'theme', 'Light')
+			self.punch_app_config.update("Genral", 'theme', 'Light')
 			
 		else:
 			self.theme_cls.theme_style = 'Dark'
 			self.theme_cls.primary_palette = 'BlueGray'
-			self.config.update("Genral", 'theme', 'Dark')
+			self.punch_app_config.update("Genral", 'theme', 'Dark')
 		super().on_start()
 		
 	def sactive(self, ins, value):

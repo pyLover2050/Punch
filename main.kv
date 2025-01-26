@@ -2,7 +2,8 @@
 	id: sm
 	punch_popup: punch_popup.__self__
 	
-	#---------- Main Screen -------------
+	#---------- Main Screen --------------
+	#_____________________/
 	MDScreen:
 		name: 'home screen'
 		MDBoxLayout:
@@ -39,7 +40,7 @@
 				title: 'Punch'
 				theme_icon: 'moon-waxing-crescent' if app.theme_cls.theme_style == 'Light' else "white-balance-sunny"
 				right_action_items:
-					[['cog', lambda x: root.switch_screen('setting screen')]]
+					[['information', lambda x: root.switch_screen('about screen')]]
 					
 				
 			MDBoxLayout:
@@ -91,24 +92,28 @@
 						halign: 'right'
 						
 						
-	#---------------Setting Screen--------------					
+	#---------------Setting Screen--------------
+	#________________________/					
 	
 	MDScreen:
-		name: 'setting screen'
+		name: 'about screen'
 		MDBoxLayout:
 			orientation: 'vertical'
+			spacing: dp(20)
 			
+			# ------- App Bar -------
 			MDTopAppBar:
 				id: appbar
-				title: 'Settings'
+				title: 'About'
 				left_action_items:
 					[['arrow-left', lambda x: root.switch_screen('home screen')]]
 				
-			
-			
+			#------ End App Bar------------
+		
+			#------ Setting Section ----------
 			MDBoxLayout:
 				orientation: 'vertical'
-				spacing: dp(10)
+				adaptive_height: True
 				MDLabel:
 					text: 'Settings'
 					adaptive_height: True
@@ -154,6 +159,14 @@
 						halign: 'right'
 						
 				MDLabel:
+					# blank label for fillup empty space
+			
+			# ----- End Setting Section -----
+			
+			#------- Manage Data Section ----
+			MDBoxLayout:
+				orientation: 'vertical'
+				MDLabel:
 					text: 'Manage Data'
 					adaptive_height: True
 					disabled: True
@@ -189,9 +202,13 @@
 					IconRightWidget:
 						icon: 'file-export-outline'
 						on_release: root.export_data()
-				
 						
+				MDLabel:
+					# blank label for fillup empty space
 			
+			# ---- End Manage Data Section -----
+			
+			# ----- About Section -----------
 			MDBoxLayout:
 				id: about_section
 				orientation: 'vertical'
@@ -234,6 +251,8 @@
 					markup: True
 					disabled: True
 					adaptive_height: True
+					
+			# ------ End About Section ------
 					
 					
 			
